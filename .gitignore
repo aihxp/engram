@@ -40,3 +40,7 @@ plugins/openclaw/package-lock.json
 *.backup
 *.bak*
 test-adapter-e2e.ts
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

@@ -1,4 +1,7 @@
 {
-  "database": "beads.db",
-  "jsonl_export": "issues.jsonl"
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "engram",
+  "project_id": "f07e5e85-d1f2-40ab-82c6-5ef71476d237"
 }
