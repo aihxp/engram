@@ -13,7 +13,7 @@ Engram is a unified multi-agent memory system. It provides a shared memory layer
 - **Convex** — Cloud backend (schema, CRUD, vector search, scheduled functions)
 - **TypeScript** — All code (MCP server + Convex functions + CLI + plugins)
 - **Cohere Embed 4** — Multimodal embeddings (1024-dim, text + images + code)
-- **MCP (Model Context Protocol)** — Agent-facing interface (77 tools)
+- **MCP (Model Context Protocol)** — Agent-facing interface (98 tools)
 - **SSE HTTP Server** — Real-time event streaming (optional, via `ENGRAM_SSE_PORT`)
 - **Next.js** — Agent dashboard (real-time monitoring)
 - **Commander.js** — CLI framework
@@ -77,7 +77,7 @@ Defined in `.claude/settings.json`. Also distributable via `plugins/claude-code/
 | Daily 5:00 | `learning-synthesis` | Extract learning patterns |
 | Weekly Mon 4:00 | `update-golden-principles` | Refresh golden rules |
 
-## MCP Tools (77 primitives)
+## MCP Tools (98 primitives)
 
 All tools live in a shared registry: `mcp-server/src/lib/tool-registry.ts`.
 Full reference: `docs/API-REFERENCE.md` (auto-generated via `npx tsx scripts/generate-api-reference.ts`).

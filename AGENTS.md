@@ -14,9 +14,9 @@ version history, QA-pair retrieval, history bootstrap, and filesystem mirror.
 
 | Track | Root Beads | First Task |
 |-------|-----------|------------|
-| **P1: Progressive Disclosure** | engram-adw | engram-2kn (schema) |
-| **P3: Version History** | engram-gd6 | engram-rqm (schema) |
-| **P4: QA-Pairs** | engram-5id | engram-7hb (schema) |
+| **P1: Progressive Disclosure** | engram-adw | DONE (Implemented) |
+| **P3: Version History** | engram-gd6 | DONE (Implemented) |
+| **P4: QA-Pairs** | engram-5id | DONE (Implemented) |
 
 P2 (Sleep-Time), P5 (Bootstrap), P6 (FS Mirror) are blocked until P1 completes.
 
@@ -63,7 +63,7 @@ Full prompts, checklist, and Agent Mail conventions are in **`docs/BEADS-WORKFLO
 | Register an agent | `memory_register_agent` → Agent tools |
 | Subscribe to events | `memory_subscribe` → `memory_poll_subscription` |
 | Query raw data | `memory_query_raw` (escape hatch) |
-| Discover all tools | `memory_list_capabilities` (69 tools, 13 categories) |
+| Discover all tools | `memory_list_capabilities` (98 tools, 15 categories) |
 
 ## Navigation Map
 

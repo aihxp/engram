@@ -413,6 +413,18 @@ All documented patterns with code examples are available at:
 
 ---
 
+### 9. Token Management for Manifests: Progressive Disclosure
+**File**: `docs/patterns/progressive-disclosure.md`
+
+When generating manifests, token budgets MUST be strictly enforced to avoid system prompt overflow.
+
+- **Pinned facts**: High priority, full content.
+- **Unpinned summaries**: Low priority, truncated to 1-line.
+
+**Impact**: Phase 4+. Ensures reliability as memory grows.
+
+---
+
 ## Key Takeaways
 
 1. **MCP Logging**: stdout is reserved. Use stderr exclusively.
@@ -423,8 +435,9 @@ All documented patterns with code examples are available at:
 6. **Sync Pattern**: Use mergeInsert with ID as key column.
 7. **Crons**: Define all 7 in convex/crons.ts, functions in convex/crons/ directory.
 8. **Error Handling**: Return structured errors with guidance, use circuit breakers.
+9. **Progressive Disclosure**: Manifests must handle tiered loading and token budgets.
 
 ---
 
-**Document Generated**: 2026-02-11
+**Document Updated**: 2026-03-17
 **Source Documents**: 2 (tech-stack-best-practices.md, PLAN.md)

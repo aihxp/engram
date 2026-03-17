@@ -6,7 +6,7 @@
 
 ## Background
 
-Engram is already a sophisticated multi-agent memory system with 73 MCP tools, 17 Convex tables,
+Engram is already a sophisticated multi-agent memory system with 98 MCP tools, 17 Convex tables,
 rich fact schema (confidence, importance, lifecycle, emotional context, temporal links), and
 scope-based access control. However, it lacks several key features that Letta's Context Repositories
 demonstrate as critical for production agent memory:
