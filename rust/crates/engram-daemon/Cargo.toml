@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 engram-core = { path = "../engram-core" }
 engram-sync = { path = "../engram-sync" }
+lancedb = { workspace = true }
 engram-types = { path = "../engram-types" }
 tokio = { version = "1.0", features = ["full"] }
 chrono = { workspace = true }

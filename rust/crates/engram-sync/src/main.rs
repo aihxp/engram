@@ -1,3 +1,4 @@
+#![recursion_limit = "8192"]
 use clap::{Parser, Subcommand};
 use anyhow::Result;
 use engram_sync::BatchImporter;

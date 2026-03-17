@@ -6,12 +6,17 @@ edition = "2021"
 [dependencies]
 engram-types = { path = "../engram-types" }
 engram-core = { path = "../engram-core" }
+engram-ai = { path = "../engram-ai" }
 serde = { workspace = true }
 lancedb = { workspace = true }
 anyhow = { workspace = true }
 async-trait = "0.1"
 tokio = { version = "1.0", features = ["full"] }
 uuid = { version = "1.0", features = ["v4"] }
+arrow = "57.0"
+arrow-array = "57.0"
+arrow-schema = "57.0"
 chrono = { version = "0.4", features = ["serde"] }
 walkdir = "2.3"
 serde_json = { workspace = true }
+clap = { version = "4.0", features = ["derive"] }

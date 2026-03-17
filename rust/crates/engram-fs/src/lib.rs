@@ -41,8 +41,10 @@ impl<B: MemoryBackend> VaultWatcher<B> {
             for path in event.paths {
                 if path.extension().and_then(|s| s.to_str()) == Some("md") {
                     let content = fs::read_to_string(&path)?;
+                    let hash = blake3::hash(content.as_bytes()).to_hex().to_string();
+                    let fact_id = format!("fs-{}", &hash[..16]); // Stable ID based on content hash
                     let fact = Fact {
-                        id: format!("fs-{}", uuid::Uuid::new_v4()), // Use unique ID or path-based hash
+                        id: fact_id,
                         content: content.clone(),
                         factual_summary: None,
                         timestamp: chrono::Utc::now().timestamp_millis(),
