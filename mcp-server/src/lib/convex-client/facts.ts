@@ -202,3 +202,10 @@ export async function searchByQA(args: {
 }) {
   return await query(PATHS.facts.searchByQA, args);
 }
+
+export async function sleepReflect(args: {
+  scopeId: string;
+  agentId: string;
+}) {
+  return await action(PATHS.actions.sleepReflect, args);
+}

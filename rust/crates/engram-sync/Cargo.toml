@@ -1,0 +1,17 @@
+[package]
+name = "engram-sync"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+engram-types = { path = "../engram-types" }
+engram-core = { path = "../engram-core" }
+serde = { workspace = true }
+lancedb = { workspace = true }
+anyhow = { workspace = true }
+async-trait = "0.1"
+tokio = { version = "1.0", features = ["full"] }
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+walkdir = "2.3"
+serde_json = { workspace = true }

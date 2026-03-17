@@ -1,0 +1,9 @@
+[package]
+name = "engram-retrieval"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+engram-types = { path = "../engram-types" }
+serde = { workspace = true }
+anyhow = { workspace = true }

@@ -22,6 +22,7 @@ import { forget, forgetSchema } from "../../tools/forget.js";
 import { pinFact, pinFactSchema, unpinFact, unpinFactSchema } from "../../tools/pin-fact.js";
 import { factHistory, factHistorySchema, factRollback, factRollbackSchema } from "../../tools/fact-history.js";
 import { defrag, defragSchema } from "../../tools/defrag.js";
+import { sleepReflect, sleepReflectSchema } from "../../tools/sleep-reflect.js";
 
 import {
   listStaleFacts, listStaleFactsSchema,
@@ -155,6 +156,21 @@ export const entries: readonly ToolEntry[] = [
     },
     zodSchema: defragSchema,
     handler: (args, agentId) => defrag(args, agentId),
+  },
+  {
+    tool: {
+      name: "memory_sleep_reflect",
+      description: "Trigger sleep-time reflection for a memory scope (consolidation + insight generation).",
+      inputSchema: {
+        type: "object",
+        properties: {
+          scopeId: { type: "string", description: "Scope ID to reflect upon" },
+        },
+        required: ["scopeId"],
+      },
+    },
+    zodSchema: sleepReflectSchema,
+    handler: (args, agentId) => sleepReflect(args, agentId),
   },
 
   // ── Delete Operations ─────────────────────────────

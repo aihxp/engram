@@ -1,0 +1,12 @@
+[package]
+name = "engram-ai"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+engram-types = { path = "../engram-types" }
+serde = { workspace = true }
+ndarray = { version = "0.15", features = ["serde"] }
+ndarray-stats = "0.5"
+anyhow = { workspace = true }
+chrono = { version = "0.4", features = ["serde"] }

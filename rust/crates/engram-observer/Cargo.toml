@@ -1,0 +1,11 @@
+[package]
+name = "engram-observer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+engram-types = { path = "../engram-types" }
+engram-core = { path = "../engram-core" }
+serde = { workspace = true }
+anyhow = { workspace = true }
+async-trait = "0.1"

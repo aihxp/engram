@@ -132,3 +132,7 @@ export async function getSessionsByAgent(agentId: string) {
 export async function deleteSession(args: { sessionId: string; hardDelete?: boolean }) {
   return await mutate(PATHS.sessions.deleteSession, args);
 }
+
+export async function getScope(scopeId: string) {
+  return await query(PATHS.scopes.getByName, { id: scopeId }); // Note: Using getByName with ID if applicable, or generic query
+}

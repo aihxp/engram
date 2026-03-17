@@ -190,5 +190,6 @@ export const PATHS = {
     observer: "actions/observer:runObserverPublic",
     reflector: "actions/reflector:runReflectorPublic",
     vectorSearchEpisodes: "actions/vectorSearchEpisodes:vectorSearchEpisodes",
+    sleepReflect: "actions/reflector:runReflectorPublic",
   },
 } as const;
