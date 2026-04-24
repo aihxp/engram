@@ -13,12 +13,12 @@ import { join } from "path";
 // ── Config ───────────────────────────────────────────
 
 const EMBED_MODEL = process.env.ENGRAM_EMBED_MODEL ||
-  "hf:cstr/mxbai-embed-large-v1-GGUF/mxbai-embed-large-v1-q8_0.gguf";
+  "hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf";
 
 const MODEL_CACHE_DIR = process.env.ENGRAM_MODEL_CACHE ||
-  join(homedir(), ".cache", "engram", "models");
+  join(homedir(), ".cache", "qmd", "models");
 
-const DIMENSIONS = parseInt(process.env.ENGRAM_EMBED_DIM || "1024", 10);
+const DIMENSIONS = parseInt(process.env.ENGRAM_EMBED_DIM || "768", 10);
 
 // ── Lazy-loaded state ────────────────────────────────
 

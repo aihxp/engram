@@ -98,7 +98,7 @@ export default defineSchema({
     .index("by_observation_session", ["observationSessionId", "timestamp"])
     .vectorIndex("vector_search", {
       vectorField: "embedding",
-      dimensions: 1024, // Cohere Embed 4 output
+      dimensions: 768, // embeddinggemma-300M output
       filterFields: ["scopeId"],
     }),
 
@@ -258,7 +258,7 @@ export default defineSchema({
     .index("by_importance", ["importance"])
     .vectorIndex("theme_search", {
       vectorField: "embedding",
-      dimensions: 1024, // Cohere Embed 4
+      dimensions: 768, // embeddinggemma-300M
       filterFields: ["scopeId"],
     }),
 
@@ -432,7 +432,7 @@ export default defineSchema({
   })
     .index("by_agent_time", ["agentId", "startTime"])
     .index("by_scope", ["scopeId", "startTime"])
-    .vectorIndex("by_embedding", { vectorField: "embedding", dimensions: 1024, filterFields: ["scopeId", "agentId"] }),
+    .vectorIndex("by_embedding", { vectorField: "embedding", dimensions: 768, filterFields: ["scopeId", "agentId"] }),
 
   // ─── knowledge_subspaces ──────────────────────────────────────
   // Semantic subspaces in memory: clustered fact regions with centroid vectors.
@@ -463,7 +463,7 @@ export default defineSchema({
     .index("by_agent_scope", ["agentId", "scopeId"])
     .index("by_scope", ["scopeId"])
     .index("by_name", ["name", "scopeId"])
-    .vectorIndex("by_centroid", { vectorField: "centroid", dimensions: 1024, filterFields: ["scopeId", "agentId"] }),
+    .vectorIndex("by_centroid", { vectorField: "centroid", dimensions: 768, filterFields: ["scopeId", "agentId"] }),
 
   // ─── fact_versions ────────────────────────────────────────
   // Immutable audit log of all mutations to facts. Snapshot captured before
