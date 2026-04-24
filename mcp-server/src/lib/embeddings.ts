@@ -1,91 +1,51 @@
 /**
- * Embedding client with graceful fallback chain:
- *   1. Cohere Embed v4 (cloud, best quality, 1024-dim via MRL)
- *   2. Ollama mxbai-embed-large (local, good quality, native 1024-dim)
- *   3. Zero vector (no semantic search, text-only fallback)
+ * embeddings.ts - Local-only embedding client using node-llama-cpp
  *
- * The fallback is automatic — no configuration needed beyond having
- * Ollama running locally with `ollama pull mxbai-embed-large`.
+ * Replaces Cohere + Ollama with direct node-llama-cpp inference.
+ * Uses a local GGUF embedding model (e.g. mxbai-embed-large, embeddinggemma).
+ * Fully self-hosted — no external APIs.
  */
 
-const DIMENSIONS = 1024;
-const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
-const OLLAMA_MODEL = process.env.ENGRAM_OLLAMA_EMBED_MODEL || "mxbai-embed-large";
+import { getLlama, resolveModelFile, type LlamaEmbeddingContext } from "node-llama-cpp";
+import { homedir } from "os";
+import { join } from "path";
 
-// Cache which provider is available to avoid repeated probe failures
-let _ollamaAvailable: boolean | null = null;
+// ── Config ───────────────────────────────────────────
 
-// ── Cohere (primary) ─────────────────────────────────
+const EMBED_MODEL = process.env.ENGRAM_EMBED_MODEL ||
+  "hf:cstr/mxbai-embed-large-v1-GGUF/mxbai-embed-large-v1-q8_0.gguf";
 
-async function cohereEmbed(
-  texts: string[],
-  inputType: "search_document" | "search_query"
-): Promise<number[][] | null> {
-  const apiKey = process.env.COHERE_API_KEY;
-  if (!apiKey) return null;
+const MODEL_CACHE_DIR = process.env.ENGRAM_MODEL_CACHE ||
+  join(homedir(), ".cache", "engram", "models");
 
-  try {
-    const response = await fetch("https://api.cohere.com/v2/embed", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        texts,
-        model: "embed-v4.0",
-        input_type: inputType,
-        embedding_types: ["float"],
-        output_dimension: DIMENSIONS,
-      }),
-    });
+const DIMENSIONS = parseInt(process.env.ENGRAM_EMBED_DIM || "1024", 10);
 
-    if (!response.ok) {
-      console.error(`[embeddings] Cohere API error: ${response.status}`);
-      return null;
-    }
+// ── Lazy-loaded state ────────────────────────────────
 
-    const data = await response.json();
-    return data.embeddings.float;
-  } catch (err: any) {
-    console.error(`[embeddings] Cohere request failed: ${err.message}`);
-    return null;
-  }
-}
+let _llama: Awaited<ReturnType<typeof getLlama>> | null = null;
+let _embedContext: LlamaEmbeddingContext | null = null;
+let _modelReady: boolean | null = null;
 
-// ── Ollama (local fallback) ──────────────────────────
-
-async function ollamaEmbed(texts: string[]): Promise<number[][] | null> {
-  // Fast-reject if we already know Ollama is down
-  if (_ollamaAvailable === false) return null;
+async function getEmbedContext(): Promise<LlamaEmbeddingContext | null> {
+  if (_embedContext) return _embedContext;
+  if (_modelReady === false) return null;
 
   try {
-    const response = await fetch(`${OLLAMA_URL}/api/embed`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: OLLAMA_MODEL, input: texts }),
-      signal: AbortSignal.timeout(30_000),
-    });
+    console.error(`[embeddings] Loading model: ${EMBED_MODEL}`);
+    const llama = await getLlama();
+    _llama = llama;
 
-    if (!response.ok) {
-      if (_ollamaAvailable === null) {
-        console.error(`[embeddings] Ollama not available (${response.status}), will use zero vectors`);
-        _ollamaAvailable = false;
-      }
-      return null;
-    }
+    const modelPath = await resolveModelFile(EMBED_MODEL, MODEL_CACHE_DIR);
+    const model = await llama.loadModel({ modelPath });
 
-    const data = await response.json();
-    if (_ollamaAvailable === null) {
-      console.error(`[embeddings] Ollama fallback active (${OLLAMA_MODEL}, ${DIMENSIONS}-dim)`);
-      _ollamaAvailable = true;
-    }
-    return data.embeddings;
+    console.error(`[embeddings] Model loaded: ${modelPath}`);
+
+    _embedContext = await model.createEmbeddingContext();
+    _modelReady = true;
+    return _embedContext;
   } catch (err: any) {
-    if (_ollamaAvailable === null) {
-      console.error(`[embeddings] Ollama unreachable: ${err.message}. Zero-vector fallback.`);
-      _ollamaAvailable = false;
-    }
+    console.error(`[embeddings] Failed to load model: ${err.message}`);
+    _modelReady = false;
     return null;
   }
 }
@@ -94,60 +54,75 @@ async function ollamaEmbed(texts: string[]): Promise<number[][] | null> {
 
 export async function generateEmbedding(
   text: string,
-  inputType: "search_document" | "search_query" = "search_document"
+  _inputType: "search_document" | "search_query" = "search_document"
 ): Promise<number[]> {
-  // 1. Try Cohere
-  const cohere = await cohereEmbed([text], inputType);
-  if (cohere?.[0]) return cohere[0];
+  const ctx = await getEmbedContext();
+  if (!ctx) {
+    console.error("[embeddings] Model unavailable, returning zero vector");
+    return new Array(DIMENSIONS).fill(0);
+  }
 
-  // 2. Try Ollama
-  const ollama = await ollamaEmbed([text]);
-  if (ollama?.[0]) return ollama[0];
+  try {
+    const embedding = await ctx.getEmbeddingFor(text);
+    const arr = Array.from(embedding.vector);
 
-  // 3. Zero vector (text-only search will still work)
-  return new Array(DIMENSIONS).fill(0);
+    // Validate dimensionality
+    if (arr.length !== DIMENSIONS) {
+      console.warn(
+        `[embeddings] Dimension mismatch: expected ${DIMENSIONS}, got ${arr.length}`
+      );
+      // Pad or truncate to match expected dimensions
+      if (arr.length < DIMENSIONS) {
+        return [...arr, ...new Array(DIMENSIONS - arr.length).fill(0)];
+      }
+      return arr.slice(0, DIMENSIONS);
+    }
+
+    return arr;
+  } catch (err: any) {
+    console.error(`[embeddings] embed() failed: ${err.message}`);
+    return new Array(DIMENSIONS).fill(0);
+  }
 }
 
 export async function generateBatchEmbeddings(
   texts: string[],
-  inputType: "search_document" | "search_query" = "search_document"
+  _inputType: "search_document" | "search_query" = "search_document"
 ): Promise<number[][]> {
   if (texts.length === 0) return [];
 
-  // 1. Try Cohere (batch limit 96)
-  const batchSize = 96;
-  const allCohere: number[][] = [];
-  let cohereWorking = true;
+  const ctx = await getEmbedContext();
+  if (!ctx) {
+    return texts.map(() => new Array(DIMENSIONS).fill(0));
+  }
 
-  for (let i = 0; i < texts.length && cohereWorking; i += batchSize) {
-    const batch = texts.slice(i, i + batchSize);
-    const result = await cohereEmbed(batch, inputType);
-    if (result) {
-      allCohere.push(...result);
-    } else {
-      cohereWorking = false;
+  const results: number[][] = [];
+  for (const text of texts) {
+    try {
+      const embedding = await ctx.getEmbeddingFor(text);
+      const arr = Array.from(embedding.vector);
+
+      if (arr.length !== DIMENSIONS) {
+        if (arr.length < DIMENSIONS) {
+          results.push([...arr, ...new Array(DIMENSIONS - arr.length).fill(0)]);
+        } else {
+          results.push(arr.slice(0, DIMENSIONS));
+        }
+      } else {
+        results.push(arr);
+      }
+    } catch (err: any) {
+      console.error(`[embeddings] Batch embed failed for "${text.slice(0, 50)}...": ${err.message}`);
+      results.push(new Array(DIMENSIONS).fill(0));
     }
   }
-  if (cohereWorking && allCohere.length === texts.length) return allCohere;
 
-  // 2. Try Ollama for remaining/all texts
-  const ollama = await ollamaEmbed(texts);
-  if (ollama && ollama.length === texts.length) return ollama;
-
-  // 3. Partial results + zero vectors for failures
-  const merged: number[][] = [];
-  for (let i = 0; i < texts.length; i++) {
-    merged.push(
-      allCohere[i] ?? ollama?.[i] ?? new Array(DIMENSIONS).fill(0)
-    );
-  }
-  return merged;
+  return results;
 }
 
 /** Check which embedding provider is active (for health/diagnostics) */
 export function getEmbeddingProvider(): string {
-  if (process.env.COHERE_API_KEY) return "cohere";
-  if (_ollamaAvailable === true) return "ollama";
-  if (_ollamaAvailable === null) return "unknown (not probed yet)";
-  return "none (zero vectors)";
+  if (_modelReady === true) return `node-llama-cpp (${EMBED_MODEL})`;
+  if (_modelReady === false) return "none (model failed to load)";
+  return "unknown (not probed yet)";
 }
