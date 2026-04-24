@@ -11,7 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@lancedb/lancedb": "^0.26.2",
+    "@lancedb/lancedb": "^0.27.2",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "chokidar": "^5.0.0",
     "node-llama-cpp": "^3.18.1",
