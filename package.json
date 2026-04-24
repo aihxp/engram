@@ -16,7 +16,7 @@
     "mcp:generate-cli": "npx mcporter generate-cli --command 'node mcp-server/dist/index.js' --name engram --bundle dist/engram-cli.js"
   },
   "devDependencies": {
-    "mcporter": "^0.7.3"
+    "mcporter": "^0.9.0"
   },
   "repository": {
     "type": "git",
